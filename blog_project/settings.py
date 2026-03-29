@@ -8,7 +8,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ─── Security ─────────────────────────────────────────────────────────────────
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-before-deploying')
 DEBUG = config('DEBUG', default=False, cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost, dev-blog-a74q.onrender.com', cast=Csv())
+
+# Build ALLOWED_HOSTS from the environment variable, then also automatically
+# include the Render-provided hostname so the app works right after deploy.
+_hosts = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
+ALLOWED_HOSTS = list(_hosts)
+
+# Render sets RENDER_EXTERNAL_HOSTNAME automatically — add it if present
+_render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if _render_host and _render_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_render_host)
 
 # ─── Applications ─────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
