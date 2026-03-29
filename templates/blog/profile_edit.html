@@ -1,0 +1,409 @@
+{% extends 'base.html' %}
+{% block title %}Edit Profile — DevLog{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ── Section cards matching the app design system ─────────── */
+  .edit-card {
+    background: linear-gradient(145deg, #161b22 0%, #13181f 100%);
+    border: 1px solid #21262d;
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+  .edit-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #8b949e;
+    margin-bottom: 1.25rem;
+  }
+  .edit-card-title svg {
+    width: 14px; height: 14px; flex-shrink: 0;
+  }
+
+  /* ── Form field labels ─────────────────────────────────────── */
+  .field-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #c9d1d9;
+    margin-bottom: 6px;
+  }
+
+  /* ── Shared input style ────────────────────────────────────── */
+  .edit-input {
+    width: 100%;
+    background: #0d1117 !important;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.875rem;
+    color: #e6edf3 !important;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    caret-color: #58a6ff;
+  }
+  .edit-input:focus {
+    border-color: #388bfd;
+    box-shadow: 0 0 0 3px rgba(56,139,253,0.15);
+  }
+  .edit-input::placeholder { color: #484f58 !important; }
+  .edit-input:-webkit-autofill,
+  .edit-input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #e6edf3 !important;
+    -webkit-box-shadow: 0 0 0 1000px #0d1117 inset !important;
+  }
+
+  /* ── Prefix input group (github.com/ and @) ──────────────── */
+  .input-group {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .input-group:focus-within {
+    border-color: #388bfd;
+    box-shadow: 0 0 0 3px rgba(56,139,253,0.15);
+  }
+  .input-group-prefix {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.75rem;
+    background: #161b22;
+    color: #6e7681;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    border-right: 1px solid #30363d;
+    flex-shrink: 0;
+  }
+  .input-group-field {
+    flex: 1;
+    background: #0d1117 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.875rem;
+    color: #e6edf3 !important;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    caret-color: #58a6ff;
+    min-width: 0;
+  }
+  .input-group-field::placeholder { color: #484f58 !important; }
+  .input-group-field:-webkit-autofill {
+    -webkit-text-fill-color: #e6edf3 !important;
+    -webkit-box-shadow: 0 0 0 1000px #0d1117 inset !important;
+  }
+
+  /* ── Avatar upload area ───────────────────────────────────── */
+  .avatar-ring {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .avatar-ring img,
+  .avatar-ring .avatar-initials {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 2px solid #30363d;
+  }
+  .avatar-initials {
+    background: linear-gradient(135deg, #3b82f6, #7c3aed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.5rem;
+  }
+  .avatar-cam-btn {
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 24px; height: 24px;
+    background: #388bfd;
+    border-radius: 50%;
+    border: 2px solid #0d1117;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .avatar-cam-btn:hover { background: #58a6ff; }
+  .avatar-cam-btn svg { width: 11px; height: 11px; color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-2xl">
+
+  <!-- Page header -->
+  <div class="flex items-center gap-3 mb-8">
+    <a href="{% url 'profile' user.username %}"
+      style="color:#6e7681; transition:color 0.2s; line-height:0;"
+      onmouseover="this.style.color='#e6edf3'" onmouseout="this.style.color='#6e7681'">
+      <i data-feather="arrow-left" style="width:20px;height:20px;"></i>
+    </a>
+    <div>
+      <h1 style="font-size:1.25rem;font-weight:700;color:#e6edf3;margin:0;">Edit Profile</h1>
+      <p style="font-size:0.8rem;color:#8b949e;margin:2px 0 0;">Update your public profile information</p>
+    </div>
+  </div>
+
+  <form method="POST" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:1.25rem;">
+    {% csrf_token %}
+
+    <!-- ── Profile Picture ──────────────────────────────────── -->
+    <div class="edit-card">
+      <p class="edit-card-title">
+        <i data-feather="user"></i> Profile Picture
+      </p>
+      <div style="display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;">
+
+        <!-- Avatar circle with camera button -->
+        <div class="avatar-ring">
+          {% if profile.avatar %}
+            <img src="{{ profile.avatar.url }}" id="avatar-preview" alt="Avatar" />
+          {% else %}
+            <div class="avatar-initials" id="avatar-placeholder">{{ user.username|first|upper }}</div>
+            <img src="" id="avatar-preview" alt="Avatar"
+              style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid #30363d;display:none;" />
+          {% endif %}
+          <label for="avatar-upload" class="avatar-cam-btn" title="Change photo">
+            <i data-feather="camera"></i>
+          </label>
+        </div>
+
+        <!-- Django avatar widget hidden — we use our own UI -->
+        <div style="display:none;">{{ form.avatar }}</div>
+
+        <!-- Custom file input (triggers the hidden input) -->
+        <div>
+          <input type="file" id="avatar-upload" name="avatar" accept="image/*"
+            style="display:none;" />
+          <label for="avatar-upload" class="btn-secondary"
+            style="cursor:pointer;font-size:0.8rem;display:inline-flex;align-items:center;gap:6px;margin-bottom:6px;">
+            <i data-feather="upload" style="width:13px;height:13px;"></i> Upload photo
+          </label>
+          {% if profile.avatar %}
+          <!-- Hidden "clear" checkbox from Django widget — triggered by our Remove button -->
+          <button type="button" id="remove-avatar-btn"
+            style="display:inline-flex;align-items:center;gap:5px;margin-left:6px;margin-bottom:6px;background:none;border:1px solid #30363d;border-radius:8px;padding:5px 10px;font-size:0.8rem;color:#8b949e;cursor:pointer;transition:all 0.2s;"
+            onmouseover="this.style.color='#f85149';this.style.borderColor='#f85149'"
+            onmouseout="this.style.color='#8b949e';this.style.borderColor='#30363d'">
+            <i data-feather="trash-2" style="width:12px;height:12px;"></i> Remove photo
+          </button>
+          {% endif %}
+          <p style="font-size:0.72rem;color:#6e7681;margin:0;">Recommended: square image, at least 200×200px</p>
+          <p id="avatar-filename" style="font-size:0.72rem;color:#58a6ff;margin:4px 0 0;display:none;"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Personal Information ─────────────────────────────── -->
+    <div class="edit-card">
+      <p class="edit-card-title">
+        <i data-feather="info"></i> Personal Information
+      </p>
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+
+        <!-- First / Last name row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <div>
+            <label class="field-label">First name</label>
+            <input type="text" name="first_name"
+              value="{{ form.first_name.value|default:'' }}"
+              placeholder="First name"
+              class="edit-input"
+              onfocus="this.style.borderColor='#388bfd';this.style.boxShadow='0 0 0 3px rgba(56,139,253,0.15)'"
+              onblur="this.style.borderColor='#30363d';this.style.boxShadow='none'" />
+          </div>
+          <div>
+            <label class="field-label">Last name</label>
+            <input type="text" name="last_name"
+              value="{{ form.last_name.value|default:'' }}"
+              placeholder="Last name"
+              class="edit-input"
+              onfocus="this.style.borderColor='#388bfd';this.style.boxShadow='0 0 0 3px rgba(56,139,253,0.15)'"
+              onblur="this.style.borderColor='#30363d';this.style.boxShadow='none'" />
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label class="field-label">Email</label>
+          <input type="email" name="email"
+            value="{{ form.email.value|default:'' }}"
+            placeholder="your@email.com"
+            class="edit-input"
+            onfocus="this.style.borderColor='#388bfd';this.style.boxShadow='0 0 0 3px rgba(56,139,253,0.15)'"
+            onblur="this.style.borderColor='#30363d';this.style.boxShadow='none'" />
+        </div>
+
+        <!-- Bio -->
+        <div>
+          <label class="field-label">
+            Bio
+            <span style="color:#6e7681;font-weight:400;"> — max 500 characters</span>
+          </label>
+          <textarea name="bio" id="id_bio" rows="3" maxlength="500"
+            placeholder="Tell the world a bit about yourself…"
+            class="edit-input"
+            style="resize:vertical;"
+            onfocus="this.style.borderColor='#388bfd';this.style.boxShadow='0 0 0 3px rgba(56,139,253,0.15)'"
+            onblur="this.style.borderColor='#30363d';this.style.boxShadow='none'">{{ form.bio.value|default:'' }}</textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:4px;">
+            <span id="bio-counter" style="font-size:0.72rem;color:#6e7681;">0 / 500</span>
+          </div>
+        </div>
+
+        <!-- Location -->
+        <div>
+          <label class="field-label">Location</label>
+          <input type="text" name="location"
+            value="{{ form.location.value|default:'' }}"
+            placeholder="e.g. Nairobi, Kenya"
+            class="edit-input"
+            onfocus="this.style.borderColor='#388bfd';this.style.boxShadow='0 0 0 3px rgba(56,139,253,0.15)'"
+            onblur="this.style.borderColor='#30363d';this.style.boxShadow='none'" />
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Links ────────────────────────────────────────────── -->
+    <div class="edit-card">
+      <p class="edit-card-title">
+        <i data-feather="link-2"></i> Links
+      </p>
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+
+        <!-- Website -->
+        <div>
+          <label class="field-label" style="display:flex;align-items:center;gap:6px;">
+            <i data-feather="globe" style="width:13px;height:13px;color:#6e7681;"></i> Website
+          </label>
+          <input type="url" name="website"
+            value="{{ form.website.value|default:'' }}"
+            placeholder="https://yoursite.com"
+            class="edit-input"
+            onfocus="this.style.borderColor='#388bfd';this.style.boxShadow='0 0 0 3px rgba(56,139,253,0.15)'"
+            onblur="this.style.borderColor='#30363d';this.style.boxShadow='none'" />
+        </div>
+
+        <!-- GitHub -->
+        <div>
+          <label class="field-label" style="display:flex;align-items:center;gap:6px;">
+            <i data-feather="github" style="width:13px;height:13px;color:#6e7681;"></i> GitHub username
+          </label>
+          <div class="input-group">
+            <span class="input-group-prefix">github.com/</span>
+            <input type="text" name="github"
+              value="{{ form.github.value|default:'' }}"
+              placeholder="yourusername"
+              class="input-group-field" />
+          </div>
+        </div>
+
+        <!-- Twitter / X -->
+        <div>
+          <label class="field-label" style="display:flex;align-items:center;gap:6px;">
+            <i data-feather="twitter" style="width:13px;height:13px;color:#6e7681;"></i> X / Twitter handle
+          </label>
+          <div class="input-group">
+            <span class="input-group-prefix">@</span>
+            <input type="text" name="twitter"
+              value="{{ form.twitter.value|default:'' }}"
+              placeholder="yourhandle"
+              class="input-group-field" />
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Actions ──────────────────────────────────────────── -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-top:0.5rem;">
+      <a href="{% url 'profile' user.username %}" class="btn-secondary">
+        <i data-feather="x" style="width:15px;height:15px;"></i> Cancel
+      </a>
+      <button type="submit" class="btn-primary">
+        <i data-feather="check" style="width:15px;height:15px;"></i> Save changes
+      </button>
+    </div>
+
+  </form>
+
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // ── Avatar preview ────────────────────────────────────────────
+  const avatarInput       = document.getElementById('avatar-upload');
+  const avatarPreview     = document.getElementById('avatar-preview');
+  const avatarPlaceholder = document.getElementById('avatar-placeholder');
+  const avatarFilename    = document.getElementById('avatar-filename');
+  const removeBtn         = document.getElementById('remove-avatar-btn');
+
+  if (avatarInput) {
+    avatarInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      if (avatarFilename) {
+        avatarFilename.textContent = '✓ ' + file.name;
+        avatarFilename.style.display = 'block';
+      }
+      const reader = new FileReader();
+      reader.onload = e => {
+        avatarPreview.src = e.target.result;
+        avatarPreview.style.display = 'block';
+        if (avatarPlaceholder) avatarPlaceholder.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Wire "Remove photo" to Django's hidden clear checkbox
+  if (removeBtn) {
+    removeBtn.addEventListener('click', function () {
+      // Tick the hidden clear checkbox that Django's ClearableFileInput renders
+      const clearCheckbox = document.querySelector('input[name="avatar-clear"]');
+      if (clearCheckbox) clearCheckbox.checked = true;
+      // Show placeholder, hide image
+      if (avatarPreview) { avatarPreview.src = ''; avatarPreview.style.display = 'none'; }
+      if (avatarPlaceholder) avatarPlaceholder.style.display = 'flex';
+      removeBtn.style.display = 'none';
+      if (avatarFilename) { avatarFilename.style.display = 'none'; avatarFilename.textContent = ''; }
+    });
+  }
+
+  // ── Bio character counter ─────────────────────────────────────
+  const bioField  = document.getElementById('id_bio');
+  const bioCounter = document.getElementById('bio-counter');
+  if (bioField && bioCounter) {
+    function updateBio() {
+      const len = bioField.value.length;
+      bioCounter.textContent = len + ' / 500';
+      bioCounter.style.color = len > 490 ? '#f85149' : len > 450 ? '#d29922' : '#6e7681';
+    }
+    bioField.addEventListener('input', updateBio);
+    updateBio();
+  }
+
+  feather.replace({ 'stroke-width': 1.75 });
+</script>
+{% endblock %}

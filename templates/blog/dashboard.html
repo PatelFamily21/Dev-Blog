@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — DevLog{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gh-fg-default">Dashboard</h1>
+      <p class="text-gh-fg-muted text-sm mt-1">Welcome back, {{ user.username }}</p>
+    </div>
+    <a href="{% url 'post_create' %}" class="btn-primary">
+      <i data-feather="plus" class="w-4 h-4"></i> New Post
+    </a>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+    <div class="bg-gh-canvas-overlay border border-gh-border rounded-xl p-5">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-gh-accent-subtle flex items-center justify-center">
+          <i data-feather="file-text" class="w-4 h-4 text-gh-accent-fg"></i>
+        </div>
+        <span class="text-xs text-gh-fg-muted uppercase tracking-wide font-medium">Published</span>
+      </div>
+      <p class="text-3xl font-bold text-gh-fg-default">{{ published_count }}</p>
+    </div>
+    <div class="bg-gh-canvas-overlay border border-gh-border rounded-xl p-5">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-gh-neutral-muted flex items-center justify-center">
+          <i data-feather="edit" class="w-4 h-4 text-gh-fg-muted"></i>
+        </div>
+        <span class="text-xs text-gh-fg-muted uppercase tracking-wide font-medium">Drafts</span>
+      </div>
+      <p class="text-3xl font-bold text-gh-fg-default">{{ draft_count }}</p>
+    </div>
+    <div class="bg-gh-canvas-overlay border border-gh-border rounded-xl p-5">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-gh-success-emphasis/20 flex items-center justify-center">
+          <i data-feather="eye" class="w-4 h-4 text-gh-success-fg"></i>
+        </div>
+        <span class="text-xs text-gh-fg-muted uppercase tracking-wide font-medium">Total Views</span>
+      </div>
+      <p class="text-3xl font-bold text-gh-fg-default">{{ total_views }}</p>
+    </div>
+    <div class="bg-gh-canvas-overlay border border-gh-border rounded-xl p-5">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-gh-attention-subtle flex items-center justify-center">
+          <i data-feather="message-square" class="w-4 h-4 text-gh-attention-fg"></i>
+        </div>
+        <span class="text-xs text-gh-fg-muted uppercase tracking-wide font-medium">Comments</span>
+      </div>
+      <p class="text-3xl font-bold text-gh-fg-default">{{ total_comments }}</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- Posts table -->
+    <div class="lg:col-span-2">
+      <div class="bg-gh-canvas-overlay border border-gh-border rounded-xl overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gh-border">
+          <h2 class="font-semibold text-gh-fg-default">Your Posts</h2>
+          <a href="{% url 'post_create' %}" class="text-xs text-gh-accent-fg hover:text-gh-accent-fg/80 flex items-center gap-1">
+            <i data-feather="plus" class="w-3 h-3"></i> New
+          </a>
+        </div>
+
+        {% if user_posts %}
+        <div class="divide-y divide-gh-border">
+          {% for post in user_posts %}
+          <div class="px-5 py-4 flex items-start gap-4 hover:bg-gh-canvas-subtle/50 transition-colors group">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                  {% if post.status == 'published' %}bg-gh-success-emphasis/20 text-gh-success-fg
+                  {% else %}bg-gh-neutral-muted text-gh-fg-muted{% endif %}">
+                  {{ post.status }}
+                </span>
+                <span class="text-xs text-gh-fg-subtle">{{ post.created_at|date:"M j, Y" }}</span>
+              </div>
+              <p class="text-sm font-medium text-gh-fg-default truncate">{{ post.title }}</p>
+              <div class="flex items-center gap-3 mt-1 text-xs text-gh-fg-subtle">
+                <span class="flex items-center gap-1"><i data-feather="eye" class="w-3 h-3"></i> {{ post.views }}</span>
+                <span class="flex items-center gap-1"><i data-feather="message-square" class="w-3 h-3"></i> {{ post.comment_count }}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+              {% if post.status == 'published' %}
+              <a href="{{ post.get_absolute_url }}" class="p-1.5 text-gh-fg-muted hover:text-gh-fg-default rounded hover:bg-gh-canvas-subtle transition-all" title="View">
+                <i data-feather="external-link" class="w-3.5 h-3.5"></i>
+              </a>
+              {% endif %}
+              <a href="{% url 'post_edit' post.slug %}" class="p-1.5 text-gh-fg-muted hover:text-gh-accent-fg rounded hover:bg-gh-canvas-subtle transition-all" title="Edit">
+                <i data-feather="edit-2" class="w-3.5 h-3.5"></i>
+              </a>
+              <a href="{% url 'post_delete' post.slug %}" class="p-1.5 text-gh-fg-muted hover:text-gh-danger-fg rounded hover:bg-gh-canvas-subtle transition-all" title="Delete">
+                <i data-feather="trash-2" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="py-16 text-center">
+          <i data-feather="file-plus" class="w-10 h-10 text-gh-fg-muted mx-auto mb-3"></i>
+          <p class="text-sm text-gh-fg-muted mb-4">You haven't written anything yet</p>
+          <a href="{% url 'post_create' %}" class="btn-primary text-sm">Write your first post</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Recent comments -->
+    <div class="lg:col-span-1">
+      <div class="bg-gh-canvas-overlay border border-gh-border rounded-xl overflow-hidden">
+        <div class="px-5 py-4 border-b border-gh-border">
+          <h2 class="font-semibold text-gh-fg-default">Recent Comments</h2>
+        </div>
+        {% if recent_comments %}
+        <div class="divide-y divide-gh-border">
+          {% for comment in recent_comments %}
+          <div class="px-5 py-4">
+            <div class="flex items-center gap-2 mb-2">
+              {% if comment.author.profile.avatar %}
+                <img src="{{ comment.author.profile.avatar.url }}" class="w-6 h-6 rounded-full object-cover border border-gh-border" />
+              {% else %}
+                <div class="w-6 h-6 rounded-full bg-gh-accent-subtle border border-gh-accent-muted flex items-center justify-center text-gh-accent-fg font-semibold text-xs">
+                  {{ comment.author.username|first|upper }}
+                </div>
+              {% endif %}
+              <span class="text-xs font-medium text-gh-fg-default">{{ comment.author.username }}</span>
+              <span class="text-xs text-gh-fg-subtle ml-auto">{{ comment.created_at|date:"M j" }}</span>
+            </div>
+            <p class="text-xs text-gh-fg-muted leading-relaxed mb-2">{{ comment.body|truncatechars:80 }}</p>
+            <a href="{{ comment.post.get_absolute_url }}" class="text-xs text-gh-accent-fg hover:underline">
+              on: {{ comment.post.title|truncatechars:35 }}
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="py-12 text-center">
+          <i data-feather="message-circle" class="w-8 h-8 text-gh-fg-muted mx-auto mb-2"></i>
+          <p class="text-xs text-gh-fg-muted">No comments yet</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

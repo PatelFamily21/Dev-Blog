@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}DevLog{% endblock %}</title>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'gh': {
+              'canvas-default':   '#0d1117',
+              'canvas-overlay':   '#161b22',
+              'canvas-inset':     '#010409',
+              'canvas-subtle':    '#161b22',
+              'fg-default':       '#e6edf3',
+              'fg-muted':         '#8b949e',
+              'fg-subtle':        '#6e7681',
+              'border':           '#30363d',
+              'border-muted':     '#21262d',
+              'accent-fg':        '#58a6ff',
+              'accent-emphasis':  '#1f6feb',
+              'accent-muted':     'rgba(56,139,253,0.4)',
+              'accent-subtle':    'rgba(56,139,253,0.15)',
+              'success-fg':       '#3fb950',
+              'success-emphasis': '#238636',
+              'danger-fg':        '#f85149',
+              'danger-emphasis':  '#da3633',
+              'neutral-muted':    'rgba(110,118,129,0.4)',
+              'attention-fg':     '#d29922',
+            }
+          },
+          fontFamily: {
+            'mono': ['"JetBrains Mono"', 'Consolas', 'monospace'],
+            'sans': ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          },
+          animation: {
+            'fade-in':  'fadeIn 0.4s ease-out',
+            'slide-up': 'slideUp 0.4s cubic-bezier(0.16,1,0.3,1)',
+          },
+          keyframes: {
+            fadeIn:  { '0%': { opacity:'0' }, '100%': { opacity:'1' } },
+            slideUp: { '0%': { opacity:'0', transform:'translateY(16px)' }, '100%': { opacity:'1', transform:'translateY(0)' } },
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/feather-icons"></script>
+
+  <!-- Favicons -->
+  {% load static %}
+  <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: #0d1117;
+      color: #e6edf3;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Scrollbar ───────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #0d1117; }
+    ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(88,166,255,0.4); }
+
+    /* ─── Ambient background glow ─────────────────────────────── */
+    .bg-ambient {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(31,111,235,0.09) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(56,139,253,0.06) 0%, transparent 60%);
+    }
+
+    /* ─── CRITICAL: Fix all input text colors ─────────────────── */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="url"],
+    input[type="search"],
+    textarea,
+    select {
+      color: #e6edf3 !important;
+      background-color: #1c2128 !important;
+      caret-color: #58a6ff;
+    }
+    input::placeholder,
+    textarea::placeholder {
+      color: #6e7681 !important;
+      opacity: 1 !important;
+    }
+    /* Fix browser autofill overriding text color */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+      -webkit-text-fill-color: #e6edf3 !important;
+      -webkit-box-shadow: 0 0 0 1000px #1c2128 inset !important;
+      transition: background-color 9999s ease-in-out 0s;
+    }
+
+    /* ─── Navigation glass ────────────────────────────────────── */
+    .nav-glass {
+      background: rgba(13,17,23,0.88);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid rgba(48,54,61,0.7);
+    }
+
+    /* ─── Buttons ─────────────────────────────────────────────── */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+      color: #fff; padding: 0.5rem 1.1rem; border-radius: 10px;
+      font-size: 0.85rem; font-weight: 600;
+      border: 1px solid rgba(240,246,252,0.12);
+      transition: all 0.2s; cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+      text-decoration: none;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #2ea043 0%, #3fb950 100%);
+      box-shadow: 0 0 18px rgba(46,160,67,0.4), 0 2px 8px rgba(0,0,0,0.3);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: #1c2128; color: #c9d1d9;
+      padding: 0.5rem 1.1rem; border-radius: 10px;
+      font-size: 0.85rem; font-weight: 500;
+      border: 1px solid #30363d; transition: all 0.2s; cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-secondary:hover {
+      background: #262c36; color: #e6edf3; border-color: #484f58;
+      transform: translateY(-1px);
+    }
+
+    .btn-accent {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: linear-gradient(135deg, #1f6feb 0%, #388bfd 100%);
+      color: #fff; padding: 0.5rem 1.1rem; border-radius: 10px;
+      font-size: 0.85rem; font-weight: 600;
+      border: 1px solid rgba(56,139,253,0.3);
+      transition: all 0.2s; cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      text-decoration: none;
+    }
+    .btn-accent:hover {
+      background: linear-gradient(135deg, #388bfd 0%, #58a6ff 100%);
+      box-shadow: 0 0 20px rgba(56,139,253,0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: #1c2128; color: #f85149;
+      padding: 0.5rem 1.1rem; border-radius: 10px;
+      font-size: 0.85rem; font-weight: 500;
+      border: 1px solid #30363d; transition: all 0.2s; cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-danger:hover {
+      background: #da3633; color: #fff; border-color: #da3633;
+      box-shadow: 0 0 16px rgba(218,54,51,0.35);
+      transform: translateY(-1px);
+    }
+
+    /* ─── Post cards ──────────────────────────────────────────── */
+    .card {
+      background: linear-gradient(145deg, #161b22 0%, #13181f 100%);
+      border: 1px solid #21262d; border-radius: 16px;
+      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+    }
+    .card:hover {
+      border-color: rgba(56,139,253,0.45);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(56,139,253,0.08);
+    }
+
+    /* Alias for old template references */
+    .post-card { background: linear-gradient(145deg, #161b22 0%, #13181f 100%);
+      border: 1px solid #21262d; border-radius: 16px;
+      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s; }
+    .post-card:hover {
+      border-color: rgba(56,139,253,0.45);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(56,139,253,0.08);
+    }
+
+    /* ─── Tags ────────────────────────────────────────────────── */
+    .tag-pill {
+      display: inline-flex; align-items: center;
+      background: rgba(56,139,253,0.1); color: #79c0ff;
+      padding: 0.2rem 0.7rem; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 600;
+      border: 1px solid rgba(56,139,253,0.25); transition: all 0.2s;
+      text-decoration: none;
+    }
+    .tag-pill:hover {
+      background: rgba(56,139,253,0.2);
+      border-color: rgba(56,139,253,0.5);
+      color: #a5d6ff;
+    }
+
+    /* ─── Prose ───────────────────────────────────────────────── */
+    .prose-gh { color: #c9d1d9; line-height: 1.85; }
+    .prose-gh h1, .prose-gh h2, .prose-gh h3, .prose-gh h4 {
+      color: #e6edf3; font-weight: 700; margin-top: 1.8em; margin-bottom: 0.6em; line-height: 1.3;
+    }
+    .prose-gh h1 { font-size: 2rem; border-bottom: 1px solid #21262d; padding-bottom: 0.4em; }
+    .prose-gh h2 { font-size: 1.5rem; border-bottom: 1px solid #21262d; padding-bottom: 0.3em; }
+    .prose-gh h3 { font-size: 1.2rem; color: #79c0ff; }
+    .prose-gh p { margin-bottom: 1.2em; }
+    .prose-gh a { color: #58a6ff; text-decoration: none; border-bottom: 1px solid rgba(88,166,255,0.3); }
+    .prose-gh a:hover { border-color: #58a6ff; }
+    .prose-gh code {
+      background: #1c2128; color: #ff7b72;
+      padding: 0.18em 0.45em; border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.83em; border: 1px solid #30363d;
+    }
+    .prose-gh pre {
+      background: #0d1117; border: 1px solid #30363d; border-radius: 12px;
+      padding: 1.2em; overflow-x: auto; margin: 1.5em 0;
+    }
+    .prose-gh pre code { background: none; border: none; color: #e6edf3; padding: 0; font-size: 0.88em; }
+    .prose-gh blockquote {
+      border-left: 3px solid #388bfd; padding: 0.8em 1.2em;
+      color: #8b949e; margin: 1.5em 0; background: rgba(56,139,253,0.05);
+      border-radius: 0 8px 8px 0; font-style: italic;
+    }
+    .prose-gh ul, .prose-gh ol { padding-left: 1.6em; margin-bottom: 1.2em; }
+    .prose-gh li { margin-bottom: 0.4em; }
+    .prose-gh img { border-radius: 12px; border: 1px solid #30363d; max-width: 100%; margin: 1.5em 0; }
+    .prose-gh hr { border: none; border-top: 1px solid #21262d; margin: 2.5em 0; }
+    .prose-gh table { width: 100%; border-collapse: collapse; margin: 1.5em 0; }
+    .prose-gh th { background: #1c2128; color: #e6edf3; font-weight: 600; padding: 0.7em 1em; border: 1px solid #30363d; }
+    .prose-gh td { padding: 0.6em 1em; border: 1px solid #21262d; }
+    .prose-gh strong { color: #e6edf3; font-weight: 700; }
+
+    /* ─── Gradient text ───────────────────────────────────────── */
+    .text-gradient {
+      background: linear-gradient(135deg, #58a6ff, #a5d6ff, #79c0ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    /* ─── Toasts ──────────────────────────────────────────────── */
+    .toast { animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1); }
+
+    /* ─── Dropdown menu items ─────────────────────────────────── */
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 16px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #c9d1d9;
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+      cursor: pointer;
+    }
+    .dropdown-item:hover {
+      background: rgba(255,255,255,0.06);
+      color: #e6edf3;
+    }
+    .dropdown-item-danger { color: #f85149; }
+    .dropdown-item-danger:hover { background: rgba(248,81,73,0.1); color: #ff7b72; }
+    .dropdown-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.06);
+      flex-shrink: 0;
+      color: #8b949e;
+      transition: background 0.15s, color 0.15s;
+    }
+    .dropdown-item:hover .dropdown-icon { background: rgba(56,139,253,0.12); color: #58a6ff; border-color: rgba(56,139,253,0.2); }
+    .dropdown-item-danger:hover .dropdown-icon { background: rgba(248,81,73,0.12); color: #f85149; border-color: rgba(248,81,73,0.2); }
+
+    /* ─── Selection ───────────────────────────────────────────── */
+    ::selection { background: rgba(56,139,253,0.25); color: #e6edf3; }
+  </style>
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <div class="bg-ambient" aria-hidden="true"></div>
+
+  <!-- ─── Navigation ───────────────────────────────────────────── -->
+  <nav style="position:sticky;top:0;z-index:50;background:rgba(13,17,23,0.92);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-bottom:1px solid rgba(33,38,45,0.9);">
+    <div style="max-width:80rem;margin:0 auto;padding:0 1rem;" class="sm:px-6 lg:px-8">
+      <div style="display:flex;align-items:center;justify-content:space-between;height:60px;gap:1rem;">
+
+        <!-- ── Logo ───────────────────────────────────────────── -->
+        <a href="{% url 'home' %}" id="nav-logo"
+          style="display:inline-flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;"
+          onmouseover="document.getElementById('nav-logo-text').style.color='#58a6ff'"
+          onmouseout="document.getElementById('nav-logo-text').style.color='#e6edf3'">
+          <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(59,130,246,0.35);flex-shrink:0;transition:box-shadow 0.2s;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="white">
+              <path d="M2 2h5v2H4v8h8v-3h2v5H2V2zm7 0h5v5h-2V4.414L7.707 9.707 6.293 8.293 11.586 3H9V1z"/>
+            </svg>
+          </div>
+          <span id="nav-logo-text" style="font-size:1.05rem;font-weight:800;color:#e6edf3;letter-spacing:-0.02em;transition:color 0.2s;">DevLog</span>
+        </a>
+
+        <!-- ── Search bar (desktop) ─────────────────────────── -->
+        <form method="GET" action="{% url 'home' %}"
+          style="flex:1;max-width:360px;display:none;" id="nav-search-form">
+          <div style="position:relative;width:100%;">
+            <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:#6e7681;pointer-events:none;flex-shrink:0;"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="search" name="q" value="{{ request.GET.q }}"
+              placeholder="Search articles, topics, authors…"
+              style="width:100%;background:#1c2128 !important;border:1px solid #30363d;border-radius:12px;padding:0.45rem 1rem 0.45rem 2.35rem;font-size:0.84rem;color:#e6edf3 !important;outline:none;transition:border-color 0.2s,box-shadow 0.2s;font-family:'Plus Jakarta Sans',sans-serif;caret-color:#58a6ff;"
+              onfocus="this.style.borderColor='#388bfd';this.style.boxShadow='0 0 0 3px rgba(56,139,253,0.15)';this.style.background='#1c2128';"
+              onblur="this.style.borderColor='#30363d';this.style.boxShadow='none';" />
+          </div>
+        </form>
+
+        <!-- ── Right actions ───────────────────────────────── -->
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+
+          <!-- Mobile search toggle -->
+          <button id="mobile-search-btn"
+            style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:transparent;border:1px solid #21262d;color:#8b949e;cursor:pointer;transition:all 0.2s;"
+            onmouseover="this.style.background='#1c2128';this.style.color='#e6edf3';this.style.borderColor='#30363d'"
+            onmouseout="this.style.background='transparent';this.style.color='#8b949e';this.style.borderColor='#21262d'"
+            title="Search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </button>
+
+          {% if user.is_authenticated %}
+
+          <!-- Write button -->
+          <a href="{% url 'post_create' %}" class="btn-accent"
+            style="font-size:0.8rem;padding:7px 14px;border-radius:10px;gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            <span style="display:none;" id="write-label">Write</span>
+          </a>
+
+          <!-- Avatar / user menu -->
+          <div style="position:relative;" id="avatar-menu-wrap">
+            <button id="avatar-menu-btn"
+              style="display:flex;align-items:center;gap:8px;padding:4px 8px 4px 4px;border-radius:12px;background:transparent;border:1px solid #21262d;cursor:pointer;transition:all 0.2s;outline:none;"
+              onmouseover="this.style.background='#1c2128';this.style.borderColor='#30363d'"
+              onmouseout="this.style.background='transparent';this.style.borderColor='#21262d'"
+              aria-haspopup="true" aria-expanded="false">
+              {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}"
+                  style="width:28px;height:28px;border-radius:8px;object-fit:cover;flex-shrink:0;" />
+              {% else %}
+                <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#7c3aed);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.8rem;flex-shrink:0;">
+                  {{ user.username|first|upper }}
+                </div>
+              {% endif %}
+              <span style="font-size:0.8rem;font-weight:600;color:#c9d1d9;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:none;" id="nav-username">
+                {{ user.username }}
+              </span>
+              <svg style="width:12px;height:12px;color:#6e7681;flex-shrink:0;" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 6l4 4 4-4"/>
+              </svg>
+            </button>
+
+            <!-- Dropdown panel -->
+            <div id="avatar-menu"
+              style="display:none;position:absolute;right:0;top:calc(100% + 8px);width:240px;background:linear-gradient(145deg,#1c2128,#161b22);border:1px solid #30363d;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,0.65),0 0 0 1px rgba(56,139,253,0.08);z-index:100;overflow:hidden;opacity:0;transform:translateY(-6px) scale(0.97);transition:opacity 0.18s ease,transform 0.18s ease;pointer-events:none;">
+
+              <!-- User header -->
+              <div style="padding:14px 16px 12px;border-bottom:1px solid #21262d;display:flex;align-items:center;gap:10px;">
+                {% if user.profile.avatar %}
+                  <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}"
+                    style="width:36px;height:36px;border-radius:10px;object-fit:cover;border:2px solid #30363d;flex-shrink:0;" />
+                {% else %}
+                  <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#7c3aed);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:15px;flex-shrink:0;border:2px solid #30363d;">
+                    {{ user.username|first|upper }}
+                  </div>
+                {% endif %}
+                <div style="min-width:0;">
+                  <p style="font-size:0.875rem;font-weight:700;color:#e6edf3;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ user.username }}</p>
+                  <p style="font-size:0.72rem;color:#6e7681;margin:2px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ user.email }}</p>
+                </div>
+              </div>
+
+              <!-- Menu items -->
+              <div style="padding:6px;">
+                <a href="{% url 'profile' user.username %}" class="dropdown-item" style="border-radius:10px;">
+                  <span class="dropdown-icon"><i data-feather="user" style="width:14px;height:14px;"></i></span>
+                  Your profile
+                </a>
+                <a href="{% url 'dashboard' %}" class="dropdown-item" style="border-radius:10px;">
+                  <span class="dropdown-icon"><i data-feather="layout" style="width:14px;height:14px;"></i></span>
+                  Dashboard
+                </a>
+                <a href="{% url 'post_create' %}" class="dropdown-item" style="border-radius:10px;">
+                  <span class="dropdown-icon"><i data-feather="edit-3" style="width:14px;height:14px;"></i></span>
+                  Write a post
+                </a>
+                <a href="{% url 'profile_edit' %}" class="dropdown-item" style="border-radius:10px;">
+                  <span class="dropdown-icon"><i data-feather="settings" style="width:14px;height:14px;"></i></span>
+                  Settings
+                </a>
+              </div>
+              <div style="padding:6px;border-top:1px solid #21262d;">
+                <a href="{% url 'logout' %}" class="dropdown-item dropdown-item-danger" style="border-radius:10px;">
+                  <span class="dropdown-icon"><i data-feather="log-out" style="width:14px;height:14px;"></i></span>
+                  Sign out
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {% else %}
+          <a href="{% url 'login' %}" class="btn-secondary"
+            style="font-size:0.8rem;padding:7px 14px;border-radius:10px;">Sign in</a>
+          <a href="{% url 'register' %}" class="btn-accent"
+            style="font-size:0.8rem;padding:7px 14px;border-radius:10px;">Sign up</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Mobile search bar (expands below nav on toggle) -->
+      <div id="mobile-search-bar"
+        style="display:none;padding:0 0 12px;">
+        <form method="GET" action="{% url 'home' %}" style="position:relative;">
+          <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:#6e7681;pointer-events:none;"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="search" name="q" value="{{ request.GET.q }}"
+            placeholder="Search articles…"
+            id="mobile-search-input"
+            style="width:100%;background:#1c2128 !important;border:1px solid #30363d;border-radius:12px;padding:0.5rem 1rem 0.5rem 2.35rem;font-size:0.875rem;color:#e6edf3 !important;outline:none;font-family:'Plus Jakarta Sans',sans-serif;caret-color:#58a6ff;"
+            onfocus="this.style.borderColor='#388bfd';this.style.boxShadow='0 0 0 3px rgba(56,139,253,0.15)'"
+            onblur="this.style.borderColor='#30363d';this.style.boxShadow='none'" />
+        </form>
+      </div>
+    </div>
+  </nav>
+
+  <style>
+    /* Show desktop search + username label on medium+ screens */
+    @media (min-width: 640px) {
+      #nav-search-form  { display: flex !important; }
+      #mobile-search-btn { display: none !important; }
+      #write-label      { display: inline !important; }
+      #nav-username     { display: block !important; }
+    }
+  </style>
+
+  <!-- ─── Flash Messages ────────────────────────────────────────── -->
+  {% if messages %}
+  <div class="fixed top-16 right-4 z-50 flex flex-col gap-2 w-80 max-w-[calc(100vw-2rem)]">
+    {% for message in messages %}
+    <div class="toast flex items-start gap-3 px-4 py-3.5 rounded-2xl border backdrop-blur-xl shadow-2xl
+      {% if message.tags == 'success' %}bg-gh-canvas-overlay/95 border-green-500/30 text-green-400
+      {% elif message.tags == 'error' %}bg-gh-canvas-overlay/95 border-red-500/30 text-red-400
+      {% elif message.tags == 'warning' %}bg-gh-canvas-overlay/95 border-yellow-500/30 text-yellow-400
+      {% else %}bg-gh-canvas-overlay/95 border-gh-border text-gh-fg-default{% endif %}">
+      <div class="shrink-0 mt-0.5">
+        {% if message.tags == 'success' %}<i data-feather="check-circle" class="w-4 h-4"></i>
+        {% elif message.tags == 'error' %}<i data-feather="x-circle" class="w-4 h-4"></i>
+        {% elif message.tags == 'warning' %}<i data-feather="alert-triangle" class="w-4 h-4"></i>
+        {% else %}<i data-feather="info" class="w-4 h-4"></i>{% endif %}
+      </div>
+      <span class="text-sm font-medium">{{ message }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  <script>
+    setTimeout(() => {
+      document.querySelectorAll('.toast').forEach(el => {
+        el.style.transition = 'opacity 0.6s, transform 0.6s';
+        el.style.opacity = '0'; el.style.transform = 'translateX(24px)';
+        setTimeout(() => el.remove(), 600);
+      });
+    }, 4000);
+  </script>
+  {% endif %}
+
+  <!-- ─── Main Content ──────────────────────────────────────────── -->
+  <main class="flex-1 relative z-10">{% block content %}{% endblock %}</main>
+
+  <!-- ─── Footer ───────────────────────────────────────────────── -->
+  <footer style="position:relative;z-index:10;margin-top:5rem;border-top:1px solid #21262d;">
+    <div style="max-width:80rem;margin:0 auto;padding:3rem 1rem 2rem;box-sizing:border-box;"
+      class="px-4 sm:px-6 lg:px-8">
+
+      <!-- Top section: brand + columns -->
+      <div style="display:grid;grid-template-columns:1fr;gap:2.5rem;padding-bottom:2.5rem;border-bottom:1px solid #1c2128;"
+        id="footer-grid">
+
+        <!-- Brand column -->
+        <div>
+          <a href="{% url 'home' %}" style="display:inline-flex;align-items:center;gap:10px;text-decoration:none;margin-bottom:0.875rem;">
+            <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(59,130,246,0.3);">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="white">
+                <path d="M2 2h5v2H4v8h8v-3h2v5H2V2zm7 0h5v5h-2V4.414L7.707 9.707 6.293 8.293 11.586 3H9V1z"/>
+              </svg>
+            </div>
+            <span style="font-size:1.1rem;font-weight:800;color:#e6edf3;letter-spacing:-0.02em;">DevLog</span>
+          </a>
+          <p style="font-size:0.82rem;color:#6e7681;line-height:1.7;max-width:22rem;margin:0 0 1.25rem;">
+            A developer-first blogging platform. Write about code, ideas, and everything in between. Built with ♥ for the community.
+          </p>
+          <!-- Tech badges -->
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span style="display:inline-flex;align-items:center;gap:5px;font-size:0.7rem;font-weight:600;color:#8b949e;background:rgba(255,255,255,0.04);border:1px solid #21262d;border-radius:6px;padding:3px 9px;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              Django
+            </span>
+            <span style="display:inline-flex;align-items:center;gap:5px;font-size:0.7rem;font-weight:600;color:#8b949e;background:rgba(255,255,255,0.04);border:1px solid #21262d;border-radius:6px;padding:3px 9px;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              Tailwind CSS
+            </span>
+            <span style="display:inline-flex;align-items:center;gap:5px;font-size:0.7rem;font-weight:600;color:#8b949e;background:rgba(255,255,255,0.04);border:1px solid #21262d;border-radius:6px;padding:3px 9px;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+              SQLite
+            </span>
+          </div>
+        </div>
+
+        <!-- Platform links -->
+        <div>
+          <p style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#484f58;margin:0 0 0.875rem;">Platform</p>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <a href="{% url 'home' %}" style="font-size:0.85rem;color:#8b949e;text-decoration:none;transition:color 0.2s;display:inline-flex;align-items:center;gap:6px;"
+              onmouseover="this.style.color='#58a6ff'" onmouseout="this.style.color='#8b949e'">
+              <i data-feather="home" style="width:13px;height:13px;"></i> Home
+            </a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" style="font-size:0.85rem;color:#8b949e;text-decoration:none;transition:color 0.2s;display:inline-flex;align-items:center;gap:6px;"
+              onmouseover="this.style.color='#58a6ff'" onmouseout="this.style.color='#8b949e'">
+              <i data-feather="layout" style="width:13px;height:13px;"></i> Dashboard
+            </a>
+            <a href="{% url 'post_create' %}" style="font-size:0.85rem;color:#8b949e;text-decoration:none;transition:color 0.2s;display:inline-flex;align-items:center;gap:6px;"
+              onmouseover="this.style.color='#58a6ff'" onmouseout="this.style.color='#8b949e'">
+              <i data-feather="edit-3" style="width:13px;height:13px;"></i> Write a post
+            </a>
+            <a href="{% url 'profile' user.username %}" style="font-size:0.85rem;color:#8b949e;text-decoration:none;transition:color 0.2s;display:inline-flex;align-items:center;gap:6px;"
+              onmouseover="this.style.color='#58a6ff'" onmouseout="this.style.color='#8b949e'">
+              <i data-feather="user" style="width:13px;height:13px;"></i> Your profile
+            </a>
+            {% else %}
+            <a href="{% url 'register' %}" style="font-size:0.85rem;color:#8b949e;text-decoration:none;transition:color 0.2s;display:inline-flex;align-items:center;gap:6px;"
+              onmouseover="this.style.color='#58a6ff'" onmouseout="this.style.color='#8b949e'">
+              <i data-feather="user-plus" style="width:13px;height:13px;"></i> Create account
+            </a>
+            <a href="{% url 'login' %}" style="font-size:0.85rem;color:#8b949e;text-decoration:none;transition:color 0.2s;display:inline-flex;align-items:center;gap:6px;"
+              onmouseover="this.style.color='#58a6ff'" onmouseout="this.style.color='#8b949e'">
+              <i data-feather="log-in" style="width:13px;height:13px;"></i> Sign in
+            </a>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Write column -->
+        <div>
+          <p style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#484f58;margin:0 0 0.875rem;">Write</p>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <a href="{% url 'home' %}?tag=python" style="font-size:0.85rem;color:#8b949e;text-decoration:none;transition:color 0.2s;display:inline-flex;align-items:center;gap:6px;"
+              onmouseover="this.style.color='#79c0ff'" onmouseout="this.style.color='#8b949e'"># python</a>
+            <a href="{% url 'home' %}?tag=django" style="font-size:0.85rem;color:#8b949e;text-decoration:none;transition:color 0.2s;display:inline-flex;align-items:center;gap:6px;"
+              onmouseover="this.style.color='#79c0ff'" onmouseout="this.style.color='#8b949e'"># django</a>
+            <a href="{% url 'home' %}?tag=javascript" style="font-size:0.85rem;color:#8b949e;text-decoration:none;transition:color 0.2s;display:inline-flex;align-items:center;gap:6px;"
+              onmouseover="this.style.color='#79c0ff'" onmouseout="this.style.color='#8b949e'"># javascript</a>
+            <a href="{% url 'home' %}?tag=webdev" style="font-size:0.85rem;color:#8b949e;text-decoration:none;transition:color 0.2s;display:inline-flex;align-items:center;gap:6px;"
+              onmouseover="this.style.color='#79c0ff'" onmouseout="this.style.color='#8b949e'"># webdev</a>
+            <a href="{% url 'home' %}?tag=opensource" style="font-size:0.85rem;color:#8b949e;text-decoration:none;transition:color 0.2s;display:inline-flex;align-items:center;gap:6px;"
+              onmouseover="this.style.color='#79c0ff'" onmouseout="this.style.color='#8b949e'"># opensource</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom bar -->
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;padding-top:1.5rem;">
+        <p style="font-size:0.75rem;color:#484f58;margin:0;">
+          © {% now "Y" %} DevLog. Made for developers who write.
+        </p>
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <span style="font-size:0.72rem;color:#30363d;">·</span>
+          <span style="font-size:0.72rem;color:#484f58;">Open platform</span>
+          <span style="font-size:0.72rem;color:#30363d;">·</span>
+          <span style="font-size:0.72rem;color:#484f58;">Dark mode</span>
+          <span style="font-size:0.72rem;color:#30363d;">·</span>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="width:6px;height:6px;border-radius:50%;background:#3fb950;box-shadow:0 0 5px rgba(63,185,80,0.5);display:inline-block;"></span>
+            <span style="font-size:0.72rem;color:#3fb950;font-weight:600;">All systems operational</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <style>
+    @media (min-width: 640px) {
+      #footer-grid { grid-template-columns: 2fr 1fr 1fr !important; }
+    }
+  </style>
+
+  <script>
+    // ── Mobile search toggle ──────────────────────────────────────
+    (function() {
+      const btn = document.getElementById('mobile-search-btn');
+      const bar = document.getElementById('mobile-search-bar');
+      const inp = document.getElementById('mobile-search-input');
+      if (!btn || !bar) return;
+      btn.addEventListener('click', () => {
+        const open = bar.style.display === 'block';
+        bar.style.display = open ? 'none' : 'block';
+        if (!open && inp) setTimeout(() => inp.focus(), 50);
+      });
+    })();
+
+    // ── Avatar dropdown toggle ────────────────────────────────────
+    (function() {
+      const btn   = document.getElementById('avatar-menu-btn');
+      const menu  = document.getElementById('avatar-menu');
+      const wrap  = document.getElementById('avatar-menu-wrap');
+      if (!btn || !menu) return;
+
+      let open = false;
+
+      function showMenu() {
+        open = true;
+        menu.style.display = 'block';
+        // Force reflow then animate in
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            menu.style.opacity = '1';
+            menu.style.transform = 'translateY(0) scale(1)';
+            menu.style.pointerEvents = 'auto';
+          });
+        });
+        btn.setAttribute('aria-expanded', 'true');
+        // Highlight the avatar ring
+        const avatar = btn.querySelector('img, div');
+        if (avatar) avatar.style.boxShadow = '0 0 0 2px #388bfd';
+      }
+
+      function hideMenu() {
+        open = false;
+        menu.style.opacity = '0';
+        menu.style.transform = 'translateY(-6px) scale(0.97)';
+        menu.style.pointerEvents = 'none';
+        btn.setAttribute('aria-expanded', 'false');
+        const avatar = btn.querySelector('img, div');
+        if (avatar) avatar.style.boxShadow = '0 0 0 2px #30363d';
+        setTimeout(() => { if (!open) menu.style.display = 'none'; }, 180);
+      }
+
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        open ? hideMenu() : showMenu();
+      });
+
+      // Close on outside click
+      document.addEventListener('click', (e) => {
+        if (open && !wrap.contains(e.target)) hideMenu();
+      });
+
+      // Close on Escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && open) hideMenu();
+      });
+    })();
+  </script>
+
+  <script>feather.replace({ 'stroke-width': 1.75 });</script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

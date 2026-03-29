@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block title %}Sign In — DevLog{% endblock %}
+
+{% block extra_head %}
+<style>
+  .auth-input {
+    width: 100%;
+    background: #1c2128 !important;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+    color: #e6edf3 !important;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .auth-input:focus {
+    border-color: #388bfd;
+    box-shadow: 0 0 0 3px rgba(56,139,253,0.15);
+  }
+  .auth-input::placeholder { color: #6e7681 !important; }
+  .auth-input.pr-input { padding-right: 3rem; }
+
+  /* Autofill override */
+  .auth-input:-webkit-autofill,
+  .auth-input:-webkit-autofill:hover,
+  .auth-input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #e6edf3 !important;
+    -webkit-box-shadow: 0 0 0 1000px #1c2128 inset !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-[85vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
+  <div class="w-full max-w-md animate-slide-up">
+
+    <!-- Logo / heading -->
+    <div class="text-center mb-8">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center mx-auto mb-5 shadow-xl shadow-blue-500/25">
+        <svg width="24" height="24" viewBox="0 0 16 16" fill="white">
+          <path d="M2 2h5v2H4v8h8v-3h2v5H2V2zm7 0h5v5h-2V4.414L7.707 9.707 6.293 8.293 11.586 3H9V1z"/>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-extrabold text-gh-fg-default tracking-tight">Welcome back</h1>
+      <p class="text-gh-fg-muted text-sm mt-1.5">Sign in to your DevLog account</p>
+    </div>
+
+    <!-- Card -->
+    <div class="card p-8">
+      <form method="POST" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="mb-5 flex items-center gap-2.5 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-xl">
+          <i data-feather="alert-circle" class="w-4 h-4 text-red-400 shrink-0"></i>
+          <p class="text-sm text-red-400">{{ form.non_field_errors|join:" " }}</p>
+        </div>
+        {% endif %}
+
+        <div class="space-y-5">
+          <!-- Username -->
+          <div>
+            <label for="{{ form.username.id_for_label }}" class="block text-sm font-semibold text-gh-fg-default mb-2">
+              Username
+            </label>
+            <input type="text" name="username" id="{{ form.username.id_for_label }}"
+              value="{{ form.username.value|default:'' }}"
+              placeholder="Your username"
+              class="auth-input" autocomplete="username" />
+            {% if form.username.errors %}
+            <p class="mt-1.5 text-xs text-red-400 flex items-center gap-1">
+              <i data-feather="alert-circle" class="w-3 h-3"></i> {{ form.username.errors|join:", " }}
+            </p>
+            {% endif %}
+          </div>
+
+          <!-- Password -->
+          <div>
+            <label for="{{ form.password.id_for_label }}" class="block text-sm font-semibold text-gh-fg-default mb-2">
+              Password
+            </label>
+            <div class="relative">
+              <input type="password" name="password" id="{{ form.password.id_for_label }}"
+                placeholder="Your password"
+                class="auth-input pr-input" autocomplete="current-password" />
+              <button type="button" id="toggle-pw"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gh-fg-muted hover:text-gh-fg-default transition-colors p-1">
+                <i data-feather="eye" class="w-4 h-4" id="eye-icon"></i>
+              </button>
+            </div>
+            {% if form.password.errors %}
+            <p class="mt-1.5 text-xs text-red-400 flex items-center gap-1">
+              <i data-feather="alert-circle" class="w-3 h-3"></i> {{ form.password.errors|join:", " }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+
+        <button type="submit" class="btn-accent w-full justify-center mt-6 py-2.5 text-sm">
+          <i data-feather="log-in" class="w-4 h-4"></i> Sign in
+        </button>
+      </form>
+    </div>
+
+    <p class="text-center text-sm text-gh-fg-muted mt-5">
+      New to DevLog?
+      <a href="{% url 'register' %}" class="text-gh-accent-fg hover:underline font-semibold">Create an account</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const toggle = document.getElementById('toggle-pw');
+  const pwField = document.getElementById('{{ form.password.id_for_label }}');
+  const eyeIcon = document.getElementById('eye-icon');
+  let visible = false;
+  toggle.addEventListener('click', () => {
+    visible = !visible;
+    pwField.type = visible ? 'text' : 'password';
+    eyeIcon.setAttribute('data-feather', visible ? 'eye-off' : 'eye');
+    feather.replace({ 'stroke-width': 1.75 });
+  });
+</script>
+{% endblock %}

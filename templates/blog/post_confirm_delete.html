@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Delete Post — DevLog{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="max-w-md mx-auto text-center py-16">
+    <div class="w-14 h-14 rounded-full bg-gh-danger-emphasis/10 border border-gh-danger-emphasis/30 flex items-center justify-center mx-auto mb-5">
+      <i data-feather="trash-2" class="w-6 h-6 text-gh-danger-fg"></i>
+    </div>
+    <h1 class="text-xl font-bold text-gh-fg-default mb-2">Delete this post?</h1>
+    <p class="text-gh-fg-muted text-sm mb-1">"{{ post.title }}"</p>
+    <p class="text-gh-fg-subtle text-xs mb-8">This action cannot be undone. The post and all its comments will be permanently deleted.</p>
+    <div class="flex items-center justify-center gap-3">
+      <a href="{% url 'post_detail' post.slug %}" class="btn-secondary">Cancel</a>
+      <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn-danger">
+          <i data-feather="trash-2" class="w-4 h-4"></i> Yes, delete
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

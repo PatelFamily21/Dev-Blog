@@ -1,0 +1,367 @@
+{% extends 'base.html' %}
+{% block title %}{{ profile_user.username }} — DevLog{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ── Profile header card ───────────────────────────────────── */
+  .profile-card {
+    background: linear-gradient(145deg, #161b22 0%, #13181f 100%);
+    border: 1px solid #21262d;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  /* ── Stat items ────────────────────────────────────────────── */
+  .stat-item {
+    text-align: center;
+    padding: 0.5rem 1rem;
+    flex: 1;
+  }
+  .stat-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #e6edf3;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .stat-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #6e7681;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+  }
+  .stat-divider {
+    width: 1px;
+    background: #21262d;
+    align-self: stretch;
+    flex-shrink: 0;
+  }
+
+  /* ── Social link pills ─────────────────────────────────────── */
+  .social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.78rem;
+    color: #8b949e;
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid #21262d;
+    transition: all 0.2s;
+  }
+  .social-link:hover {
+    color: #58a6ff;
+    background: rgba(56,139,253,0.08);
+    border-color: rgba(56,139,253,0.25);
+  }
+  .social-link svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+  /* ── Post cards ────────────────────────────────────────────── */
+  .post-card-profile {
+    background: linear-gradient(145deg, #161b22 0%, #13181f 100%);
+    border: 1px solid #21262d;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+    animation: fadeIn 0.4s ease-out;
+  }
+  .post-card-profile:hover {
+    border-color: rgba(56,139,253,0.45);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(56,139,253,0.08);
+  }
+  .post-card-cover {
+    height: 10rem;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .post-card-cover img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+  .post-card-profile:hover .post-card-cover img { transform: scale(1.04); }
+  .post-card-body {
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  /* ── Draft badge ───────────────────────────────────────────── */
+  .badge-draft {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #8b949e;
+    background: rgba(110,118,129,0.15);
+    border: 1px solid rgba(110,118,129,0.25);
+    border-radius: 6px;
+    padding: 2px 7px;
+    margin-bottom: 8px;
+    align-self: flex-start;
+  }
+
+  /* ── Post action row ───────────────────────────────────────── */
+  .post-action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: #6e7681;
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .post-action-link:hover { background: rgba(255,255,255,0.05); }
+  .post-action-link.edit:hover  { color: #58a6ff; }
+  .post-action-link.delete:hover { color: #f85149; }
+
+  /* ── Section header ────────────────────────────────────────── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6e7681;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .section-title svg { width: 13px; height: 13px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  <!-- ── Profile Header ──────────────────────────────────────── -->
+  <div class="profile-card">
+
+    <!-- Top row: avatar + info + edit button -->
+    <div style="display:flex;align-items:flex-start;gap:1.5rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+
+      <!-- Avatar -->
+      {% if profile.avatar %}
+        <img src="{{ profile.avatar.url }}" alt="{{ profile_user.username }}"
+          style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #21262d;flex-shrink:0;" />
+      {% else %}
+        <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#7c3aed);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:2rem;flex-shrink:0;border:3px solid #21262d;">
+          {{ profile_user.username|first|upper }}
+        </div>
+      {% endif %}
+
+      <!-- Name + meta -->
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:6px;">
+          <h1 style="font-size:1.5rem;font-weight:800;color:#e6edf3;margin:0;letter-spacing:-0.02em;">
+            {{ profile_user.get_full_name|default:profile_user.username }}
+          </h1>
+          <span style="font-size:0.85rem;color:#6e7681;font-weight:500;">@{{ profile_user.username }}</span>
+          {% if user == profile_user %}
+          <a href="{% url 'profile_edit' %}" class="btn-secondary"
+            style="margin-left:auto;font-size:0.78rem;padding:5px 12px;border-radius:8px;">
+            <i data-feather="settings" style="width:13px;height:13px;"></i> Edit profile
+          </a>
+          {% endif %}
+        </div>
+
+        {% if profile.bio %}
+        <p style="font-size:0.875rem;color:#8b949e;line-height:1.65;margin:0 0 12px;max-width:54ch;">
+          {{ profile.bio }}
+        </p>
+        {% endif %}
+
+        <!-- Social links row -->
+        <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+          {% if profile.location %}
+          <span class="social-link">
+            <i data-feather="map-pin"></i> {{ profile.location }}
+          </span>
+          {% endif %}
+          {% if profile.website %}
+          <a href="{{ profile.website }}" target="_blank" rel="noopener" class="social-link">
+            <i data-feather="link"></i> Website
+          </a>
+          {% endif %}
+          {% if profile.github %}
+          <a href="https://github.com/{{ profile.github }}" target="_blank" rel="noopener" class="social-link">
+            <i data-feather="github"></i> {{ profile.github }}
+          </a>
+          {% endif %}
+          {% if profile.twitter %}
+          <a href="https://twitter.com/{{ profile.twitter }}" target="_blank" rel="noopener" class="social-link">
+            <i data-feather="twitter"></i> {{ profile.twitter }}
+          </a>
+          {% endif %}
+          <span class="social-link" style="cursor:default;">
+            <i data-feather="calendar"></i> Joined {{ profile_user.date_joined|date:"F Y" }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div style="display:flex;align-items:stretch;border-top:1px solid #21262d;padding-top:1.25rem;margin-top:0.25rem;">
+      <div class="stat-item">
+        <div class="stat-value">{{ total_posts }}</div>
+        <div class="stat-label">Published</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-value">{{ total_views }}</div>
+        <div class="stat-label">Total Views</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-value">{{ posts.paginator.count }}</div>
+        <div class="stat-label">Articles</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Posts Grid ───────────────────────────────────────────── -->
+  {% if posts %}
+
+  <div class="section-header">
+    <span class="section-title">
+      <i data-feather="file-text"></i>
+      {% if user == profile_user %}Your posts{% else %}Posts by {{ profile_user.username }}{% endif %}
+      <span style="font-size:0.7rem;color:#484f58;font-weight:500;text-transform:none;letter-spacing:0;">&nbsp;·&nbsp;{{ posts.paginator.count }}</span>
+    </span>
+    {% if user == profile_user %}
+    <a href="{% url 'post_create' %}" class="btn-accent" style="font-size:0.78rem;padding:5px 12px;border-radius:8px;">
+      <i data-feather="plus" style="width:13px;height:13px;"></i> New post
+    </a>
+    {% endif %}
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;">
+    {% for post in posts %}
+    <article class="post-card-profile">
+
+      {% if post.cover_image %}
+      <a href="{{ post.get_absolute_url }}" class="post-card-cover">
+        <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" />
+      </a>
+      {% endif %}
+
+      <div class="post-card-body">
+
+        {% if post.status == 'draft' %}
+        <span class="badge-draft">
+          <i data-feather="edit" style="width:10px;height:10px;"></i> Draft
+        </span>
+        {% endif %}
+
+        <h3 style="font-size:0.95rem;font-weight:700;color:#e6edf3;margin:0 0 6px;line-height:1.4;">
+          <a href="{{ post.get_absolute_url }}"
+            style="color:inherit;text-decoration:none;transition:color 0.2s;"
+            onmouseover="this.style.color='#58a6ff'" onmouseout="this.style.color='#e6edf3'">
+            {{ post.title }}
+          </a>
+        </h3>
+
+        <p style="font-size:0.8rem;color:#8b949e;line-height:1.6;margin:0 0 12px;flex:1;">
+          {{ post.excerpt|truncatechars:95 }}
+        </p>
+
+        <!-- Tags -->
+        {% if post.tags.all %}
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;">
+          {% for tag in post.tags.all|slice:":3" %}
+          <a href="{% url 'tag_posts' tag.slug %}" class="tag-pill"># {{ tag.name }}</a>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Meta row -->
+        <div style="display:flex;align-items:center;gap:10px;font-size:0.72rem;color:#484f58;padding-top:10px;border-top:1px solid #1c2128;">
+          <span style="display:inline-flex;align-items:center;gap:4px;">
+            <i data-feather="eye" style="width:11px;height:11px;"></i> {{ post.views }}
+          </span>
+          <span style="display:inline-flex;align-items:center;gap:4px;">
+            <i data-feather="message-square" style="width:11px;height:11px;"></i> {{ post.comment_count }}
+          </span>
+          <span style="margin-left:auto;">{{ post.created_at|date:"M j, Y" }}</span>
+        </div>
+
+        <!-- Owner actions -->
+        {% if user == profile_user %}
+        <div style="display:flex;align-items:center;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid #1c2128;">
+          <a href="{{ post.get_absolute_url }}" class="post-action-link edit" title="View">
+            <i data-feather="external-link" style="width:11px;height:11px;"></i> View
+          </a>
+          <a href="{% url 'post_edit' post.slug %}" class="post-action-link edit" title="Edit">
+            <i data-feather="edit-2" style="width:11px;height:11px;"></i> Edit
+          </a>
+          <a href="{% url 'post_delete' post.slug %}" class="post-action-link delete" title="Delete" style="margin-left:auto;">
+            <i data-feather="trash-2" style="width:11px;height:11px;"></i> Delete
+          </a>
+        </div>
+        {% endif %}
+
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  {% if posts.has_other_pages %}
+  <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:2.5rem;">
+    {% if posts.has_previous %}
+    <a href="?page={{ posts.previous_page_number }}" class="btn-secondary" style="font-size:0.8rem;padding:6px 14px;">
+      <i data-feather="chevron-left" style="width:14px;height:14px;"></i> Prev
+    </a>
+    {% endif %}
+    <span style="font-size:0.85rem;color:#6e7681;padding:0 8px;">
+      Page {{ posts.number }} of {{ posts.paginator.num_pages }}
+    </span>
+    {% if posts.has_next %}
+    <a href="?page={{ posts.next_page_number }}" class="btn-secondary" style="font-size:0.8rem;padding:6px 14px;">
+      Next <i data-feather="chevron-right" style="width:14px;height:14px;"></i>
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <!-- Empty state -->
+  <div style="text-align:center;padding:5rem 1rem;">
+    <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(145deg,#161b22,#13181f);border:1px solid #21262d;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+      <i data-feather="file-text" style="width:24px;height:24px;color:#484f58;"></i>
+    </div>
+    <p style="font-size:0.95rem;font-weight:600;color:#c9d1d9;margin:0 0 6px;">No posts yet</p>
+    <p style="font-size:0.8rem;color:#6e7681;margin:0 0 1.25rem;">
+      {% if user == profile_user %}Share your first idea with the world.
+      {% else %}{{ profile_user.username }} hasn't published anything yet.{% endif %}
+    </p>
+    {% if user == profile_user %}
+    <a href="{% url 'post_create' %}" class="btn-accent" style="font-size:0.85rem;">
+      <i data-feather="edit-3" style="width:14px;height:14px;"></i> Write your first post
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

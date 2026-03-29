@@ -1,0 +1,397 @@
+{% extends 'base.html' %}
+{% block title %}DevLog — Developer Blog Platform{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ── Post cards ────────────────────────────────────────────── */
+  .home-card {
+    background: linear-gradient(145deg, #161b22 0%, #13181f 100%);
+    border: 1px solid #21262d;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+    animation: fadeIn 0.4s ease-out;
+  }
+  .home-card:hover {
+    border-color: rgba(56,139,253,0.45);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(56,139,253,0.08);
+  }
+  .home-card-cover {
+    height: 11rem;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .home-card-cover img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+    display: block;
+  }
+  .home-card:hover .home-card-cover img { transform: scale(1.04); }
+  .home-card-body {
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  /* ── Sidebar cards ─────────────────────────────────────────── */
+  .sidebar-card {
+    background: linear-gradient(145deg, #161b22 0%, #13181f 100%);
+    border: 1px solid #21262d;
+    border-radius: 16px;
+    padding: 1.25rem;
+  }
+  .sidebar-card-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #6e7681;
+    margin: 0 0 1rem;
+  }
+
+  /* ── Author mini ───────────────────────────────────────────── */
+  .author-avatar {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #21262d;
+    flex-shrink: 0;
+  }
+  .author-initials {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#3b82f6,#7c3aed);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 0.6rem;
+    flex-shrink: 0;
+  }
+
+  /* ── Trending item ─────────────────────────────────────────── */
+  .trending-item {
+    padding-bottom: 0.875rem;
+    border-bottom: 1px solid #1c2128;
+    margin-bottom: 0.875rem;
+  }
+  .trending-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .trending-link {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #c9d1d9;
+    text-decoration: none;
+    line-height: 1.4;
+    margin-bottom: 5px;
+    transition: color 0.2s;
+  }
+  .trending-link:hover { color: #58a6ff; }
+
+  /* ── Search/filter header bar ──────────────────────────────── */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    padding: 10px 14px;
+    background: linear-gradient(145deg,#161b22,#13181f);
+    border: 1px solid #21262d;
+    border-radius: 12px;
+  }
+
+  /* ── Hero ──────────────────────────────────────────────────── */
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: #58a6ff;
+    background: rgba(56,139,253,0.1);
+    border: 1px solid rgba(56,139,253,0.25);
+    border-radius: 20px;
+    padding: 4px 12px;
+    margin-bottom: 1rem;
+  }
+  .hero-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #3fb950;
+    box-shadow: 0 0 6px rgba(63,185,80,0.6);
+    flex-shrink: 0;
+  }
+
+  /* ── CTA sidebar card ──────────────────────────────────────── */
+  .cta-card {
+    background: linear-gradient(145deg, rgba(31,111,235,0.12), rgba(56,139,253,0.06));
+    border: 1px solid rgba(56,139,253,0.2);
+    border-radius: 16px;
+    padding: 1.25rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  <!-- ── Hero ─────────────────────────────────────────────────── -->
+  {% if not query and not active_tag and posts.number == 1 %}
+  <div style="margin-bottom:2.5rem;padding-bottom:2.5rem;border-bottom:1px solid #21262d;">
+    <div style="max-width:42rem;">
+      <div class="hero-badge">
+        <span class="hero-dot"></span> Open platform
+      </div>
+      <h1 style="font-size:clamp(2rem,5vw,3.25rem);font-weight:800;color:#e6edf3;line-height:1.1;letter-spacing:-0.03em;margin:0 0 1rem;">
+        Write. Share.
+        <span style="background:linear-gradient(135deg,#58a6ff,#a5d6ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Build.</span>
+      </h1>
+      <p style="font-size:1.05rem;color:#8b949e;line-height:1.7;margin:0 0 1.5rem;">
+        A developer-first blogging platform. Write about code, ideas, and everything in between.
+      </p>
+      {% if not user.is_authenticated %}
+      <div style="display:flex;flex-wrap:wrap;gap:0.75rem;">
+        <a href="{% url 'register' %}" class="btn-accent">
+          <i data-feather="user-plus" style="width:15px;height:15px;"></i> Get started — it's free
+        </a>
+        <a href="{% url 'login' %}" class="btn-secondary">Sign in</a>
+      </div>
+      {% else %}
+      <a href="{% url 'post_create' %}" class="btn-accent">
+        <i data-feather="edit-3" style="width:15px;height:15px;"></i> Write a new post
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Search results header ─────────────────────────────────── -->
+  {% if query %}
+  <div class="filter-bar">
+    <i data-feather="search" style="width:15px;height:15px;color:#6e7681;flex-shrink:0;"></i>
+    <span style="font-size:0.875rem;font-weight:600;color:#e6edf3;">
+      Results for <span style="color:#58a6ff;">"{{ query }}"</span>
+    </span>
+    <span style="font-size:0.8rem;color:#6e7681;">
+      — {{ posts.paginator.count }} post{{ posts.paginator.count|pluralize }}
+    </span>
+    <a href="{% url 'home' %}"
+      style="margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;color:#6e7681;text-decoration:none;padding:4px 10px;border-radius:8px;border:1px solid #21262d;transition:all 0.2s;"
+      onmouseover="this.style.color='#e6edf3';this.style.borderColor='#30363d'"
+      onmouseout="this.style.color='#6e7681';this.style.borderColor='#21262d'">
+      <i data-feather="x" style="width:12px;height:12px;"></i> Clear
+    </a>
+  </div>
+  {% endif %}
+
+  <!-- ── Tag filter header ─────────────────────────────────────── -->
+  {% if active_tag %}
+  <div class="filter-bar">
+    <i data-feather="hash" style="width:15px;height:15px;color:#79c0ff;flex-shrink:0;"></i>
+    <span class="tag-pill" style="font-size:0.8rem;"># {{ active_tag.name }}</span>
+    <span style="font-size:0.8rem;color:#6e7681;">
+      {{ posts.paginator.count }} post{{ posts.paginator.count|pluralize }}
+    </span>
+    <a href="{% url 'home' %}"
+      style="margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;color:#6e7681;text-decoration:none;padding:4px 10px;border-radius:8px;border:1px solid #21262d;transition:all 0.2s;"
+      onmouseover="this.style.color='#e6edf3';this.style.borderColor='#30363d'"
+      onmouseout="this.style.color='#6e7681';this.style.borderColor='#21262d'">
+      <i data-feather="x" style="width:12px;height:12px;"></i> Clear filter
+    </a>
+  </div>
+  {% endif %}
+
+  <!-- ── Main layout: posts + sidebar ──────────────────────────── -->
+  <div style="display:grid;grid-template-columns:1fr;gap:2rem;">
+
+    <!-- With sidebar on large screens -->
+    <div style="display:grid;grid-template-columns:1fr;gap:2rem;" id="home-layout">
+
+      <!-- Posts area -->
+      <div id="posts-area">
+        {% if posts %}
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;">
+          {% for post in posts %}
+          <article class="home-card">
+
+            {% if post.cover_image %}
+            <a href="{{ post.get_absolute_url }}" class="home-card-cover">
+              <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" />
+            </a>
+            {% endif %}
+
+            <div class="home-card-body">
+
+              <!-- Author row -->
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <a href="{% url 'profile' post.author.username %}"
+                  style="display:flex;align-items:center;gap:7px;text-decoration:none;">
+                  {% if post.author.profile.avatar %}
+                    <img src="{{ post.author.profile.avatar.url }}" alt="{{ post.author.username }}" class="author-avatar" />
+                  {% else %}
+                    <div class="author-initials">{{ post.author.username|first|upper }}</div>
+                  {% endif %}
+                  <span style="font-size:0.78rem;color:#8b949e;font-weight:500;transition:color 0.2s;"
+                    onmouseover="this.style.color='#e6edf3'" onmouseout="this.style.color='#8b949e'">
+                    {{ post.author.username }}
+                  </span>
+                </a>
+                <span style="font-size:0.72rem;color:#484f58;margin-left:auto;">{{ post.created_at|date:"M j" }}</span>
+              </div>
+
+              <!-- Title -->
+              <h2 style="font-size:0.95rem;font-weight:700;color:#e6edf3;margin:0 0 7px;line-height:1.4;">
+                <a href="{{ post.get_absolute_url }}"
+                  style="color:inherit;text-decoration:none;transition:color 0.2s;"
+                  onmouseover="this.style.color='#58a6ff'" onmouseout="this.style.color='#e6edf3'">
+                  {{ post.title }}
+                </a>
+              </h2>
+
+              <!-- Excerpt -->
+              <p style="font-size:0.8rem;color:#8b949e;line-height:1.65;margin:0 0 12px;flex:1;">
+                {{ post.excerpt|truncatechars:110 }}
+              </p>
+
+              <!-- Tags -->
+              {% if post.tags.all %}
+              <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;">
+                {% for tag in post.tags.all|slice:":3" %}
+                <a href="{% url 'tag_posts' tag.slug %}" class="tag-pill"># {{ tag.name }}</a>
+                {% endfor %}
+              </div>
+              {% endif %}
+
+              <!-- Meta footer -->
+              <div style="display:flex;align-items:center;gap:10px;font-size:0.72rem;color:#484f58;padding-top:10px;border-top:1px solid #1c2128;">
+                <span style="display:inline-flex;align-items:center;gap:4px;">
+                  <i data-feather="eye" style="width:11px;height:11px;"></i> {{ post.views }}
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:4px;">
+                  <i data-feather="message-square" style="width:11px;height:11px;"></i> {{ post.comment_count }}
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto;">
+                  <i data-feather="clock" style="width:11px;height:11px;"></i> {{ post.reading_time }} min read
+                </span>
+              </div>
+
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if posts.has_other_pages %}
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:2.5rem;">
+          {% if posts.has_previous %}
+          <a href="?page={{ posts.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if active_tag %}&tag={{ active_tag.slug }}{% endif %}"
+            class="btn-secondary" style="font-size:0.8rem;padding:6px 14px;">
+            <i data-feather="chevron-left" style="width:14px;height:14px;"></i> Prev
+          </a>
+          {% endif %}
+          <span style="font-size:0.85rem;color:#6e7681;padding:0 8px;">
+            Page {{ posts.number }} of {{ posts.paginator.num_pages }}
+          </span>
+          {% if posts.has_next %}
+          <a href="?page={{ posts.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if active_tag %}&tag={{ active_tag.slug }}{% endif %}"
+            class="btn-secondary" style="font-size:0.8rem;padding:6px 14px;">
+            Next <i data-feather="chevron-right" style="width:14px;height:14px;"></i>
+          </a>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- Empty state -->
+        <div style="text-align:center;padding:5rem 1rem;">
+          <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(145deg,#161b22,#13181f);border:1px solid #21262d;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+            <i data-feather="file-text" style="width:24px;height:24px;color:#484f58;"></i>
+          </div>
+          <p style="font-size:0.95rem;font-weight:600;color:#c9d1d9;margin:0 0 6px;">No posts yet</p>
+          <p style="font-size:0.8rem;color:#6e7681;margin:0 0 1.25rem;">
+            {% if query %}No results for "{{ query }}"{% else %}Be the first to publish something!{% endif %}
+          </p>
+          {% if user.is_authenticated %}
+          <a href="{% url 'post_create' %}" class="btn-accent" style="font-size:0.85rem;">
+            Write the first post
+          </a>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div><!-- /posts-area -->
+
+      <!-- Sidebar -->
+      <aside id="sidebar" style="display:flex;flex-direction:column;gap:1rem;">
+
+        <!-- Topics / Tags -->
+        {% if tags %}
+        <div class="sidebar-card">
+          <p class="sidebar-card-title">Topics</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            {% for tag in tags %}
+            <a href="{% url 'tag_posts' tag.slug %}" class="tag-pill"
+              {% if active_tag and active_tag.slug == tag.slug %}
+              style="background:rgba(56,139,253,0.2);border-color:rgba(56,139,253,0.5);"
+              {% endif %}># {{ tag.name }}</a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Trending -->
+        {% if popular_posts %}
+        <div class="sidebar-card">
+          <p class="sidebar-card-title">Trending</p>
+          {% for post in popular_posts %}
+          <div class="trending-item">
+            <a href="{{ post.get_absolute_url }}" class="trending-link">
+              {{ post.title|truncatechars:55 }}
+            </a>
+            <div style="display:flex;align-items:center;gap:10px;font-size:0.72rem;color:#484f58;">
+              <span style="display:inline-flex;align-items:center;gap:3px;">
+                <i data-feather="eye" style="width:10px;height:10px;"></i> {{ post.views }}
+              </span>
+              <a href="{% url 'profile' post.author.username %}"
+                style="color:#6e7681;text-decoration:none;transition:color 0.2s;"
+                onmouseover="this.style.color='#e6edf3'" onmouseout="this.style.color='#6e7681'">
+                {{ post.author.username }}
+              </a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Guest CTA -->
+        {% if not user.is_authenticated %}
+        <div class="cta-card">
+          <p style="font-size:0.875rem;font-weight:700;color:#e6edf3;margin:0 0 6px;">Start writing today</p>
+          <p style="font-size:0.78rem;color:#8b949e;line-height:1.6;margin:0 0 1rem;">
+            Join DevLog and share your knowledge with the developer community.
+          </p>
+          <a href="{% url 'register' %}" class="btn-primary"
+            style="width:100%;justify-content:center;font-size:0.8rem;">
+            Create free account
+          </a>
+        </div>
+        {% endif %}
+
+      </aside>
+    </div><!-- /home-layout -->
+  </div>
+
+</div>
+
+<style>
+  /* Responsive: sidebar goes below on small, beside on large */
+  @media (min-width: 1024px) {
+    #home-layout {
+      grid-template-columns: 1fr 280px !important;
+      align-items: start;
+    }
+    #sidebar { position: sticky; top: 5rem; }
+  }
+</style>
+{% endblock %}
